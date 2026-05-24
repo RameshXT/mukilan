@@ -49,7 +49,7 @@ import n8 from "../assets/films/navins/N-8.png";
 import logoAsset from "../assets/logo.png";
 import heroAsset from "../assets/hero.jpg";
 import aboutcvr from "../assets/aboutcvr.jpg";
-import about from "../assets/about.jpeg";
+import about from "../assets/Mukil.png";
 
 const marumunaiFrames = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10];
 const thodarFrames = [t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12];
@@ -77,12 +77,15 @@ interface Film {
   id: number;
   title: string;
   category: string;
-  frameCount: number;
-  frames: string[];
+  frameCount?: number;
+  frames?: string[];
   image: string;
   videoUrl?: string;
   credits?: string[];
+  /** Optional youtube thumbnail (used instead of frames) */
+  youtubeThumbnailUrl?: string;
 }
+
 
 interface LightboxState {
   frames: string[];
@@ -94,6 +97,22 @@ interface LightboxState {
 }
 
 const FILMS: Film[] = [
+  {
+    id: 5,
+    title: "YYDF (AC)",
+    category: "Video",
+    image: heroAsset,
+    videoUrl: "https://www.youtube.com/embed/OrIqzmpg04k",
+    youtubeThumbnailUrl:
+      "https://img.youtube.com/vi/OrIqzmpg04k/hqdefault.jpg",
+    credits: [
+      "Director: Vicky Baskar",
+      "DOP: Luke Jose",
+      "Associate: Amal Raju",
+      "ASSISTANT CINEMATOGRAPHER: Mukilan",
+      "Production: Vishnu vishal",
+    ],
+  },
   {
     id: 4,
     title: "Navin's Ad (AC)",
@@ -109,6 +128,7 @@ const FILMS: Film[] = [
       "Assistant Cinematographer: Mukilan, Lokesh",
     ],
   },
+
   {
     id: 3,
     title: "Grammy Savor Puttu Ad (AC)",
@@ -251,19 +271,24 @@ export default function App() {
 
   const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.03]);
 
-  const openLightbox = useCallback((film: Film) => {
+const openLightbox = useCallback((film: Film) => {
     window.history.pushState({ lightbox: true }, "");
+
+    const frames = film.frames ?? [];
+
     setLightbox({
-      frames: film.frames,
+      frames,
       index: 0,
       title: film.title,
       category: film.category,
       videoUrl: film.videoUrl,
       credits: film.credits,
     });
+
     setShowScrollHint(true);
     setTimeout(() => setShowScrollHint(false), 2800);
   }, []);
+
 
   const closeLightbox = useCallback(() => {
     if (lightbox) window.history.back();
@@ -559,48 +584,50 @@ export default function App() {
             </AnimatePresence>
 
             <div className="px-6 lg:px-24 py-16 flex flex-col gap-3 lg:gap-4">
-              {lightbox.frames.map((frame, i) => (
-                <motion.div
-                  key={i}
-                  className="relative w-full overflow-hidden"
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-60px" }}
-                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <img
-                    src={frame}
-                    alt={`Frame ${i + 1}`}
-                    className="w-full object-cover"
-                    style={{
-                      display: "block",
-                      maxHeight: "85vh",
-                      objectFit: "cover",
-                    }}
-                  />
-
-                  <div
-                    className="absolute bottom-0 left-0 px-4 py-3"
-                    style={{
-                      background:
-                        "linear-gradient(to top, rgba(0,0,0,0.6), transparent)",
-                    }}
+              {lightbox.frames.length > 0 &&
+                lightbox.frames.map((frame, i) => (
+                  <motion.div
+                    key={i}
+                    className="relative w-full overflow-hidden"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <p
-                      className="uppercase"
+                    <img
+                      src={frame}
+                      alt={`Frame ${i + 1}`}
+                      className="w-full object-cover"
                       style={{
-                        fontFamily: "Inter, sans-serif",
-                        fontSize: "9px",
-                        letterSpacing: "3px",
-                        color: "rgba(255,255,255,0.3)",
+                        display: "block",
+                        maxHeight: "85vh",
+                        objectFit: "cover",
+                      }}
+                    />
+
+                    <div
+                      className="absolute bottom-0 left-0 px-4 py-3"
+                      style={{
+                        background:
+                          "linear-gradient(to top, rgba(0,0,0,0.6), transparent)",
                       }}
                     >
-                      {String(i + 1).padStart(2, "0")} /{" "}
-                      {String(lightbox.frames.length).padStart(2, "0")}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+                      <p
+                        className="uppercase"
+                        style={{
+                          fontFamily: "Inter, sans-serif",
+                          fontSize: "9px",
+                          letterSpacing: "3px",
+                          color: "rgba(255,255,255,0.3)",
+                        }}
+                      >
+                        {String(i + 1).padStart(2, "0")} /{" "}
+                        {String(lightbox.frames.length).padStart(2, "0")}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+
 
               {lightbox.videoUrl && (
                 <motion.div
@@ -986,7 +1013,7 @@ export default function App() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0.5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px] p-[10px]">
           {FILMS.map((film, index) => (
             <FilmCard
               key={film.id}
@@ -1393,11 +1420,14 @@ const FilmCard = memo(function FilmCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <motion.div
+<motion.div
         className="w-full h-full bg-cover bg-center"
         style={{
-          backgroundImage: `url('${film.image}')`,
+          backgroundImage: film.youtubeThumbnailUrl
+            ? `url('${film.youtubeThumbnailUrl}')`
+            : `url('${film.image}')`,
         }}
+
         animate={{
           scale: isHovered ? 1.04 : 1,
           filter: isHovered ? "brightness(0.35)" : "brightness(1)",
